@@ -96,9 +96,13 @@ class PowerUpSystem:
 
     def spawn_powerups(self):
         if self.wave_number >= 2 and self.wave_number % 2 == 0 and len(self.powerups) < self.max_powerups:
-            if random.random() < 0.1:  # 10% chance to spawn a powerup on even waves
-                x = random.randint(50, 750)  # Assuming screen width of 800
-                y = random.randint(50, 550)  # Assuming screen height of 600
+            if random.random() < 0.1:
+                x = random.randint(50, 750)
+                y = random.randint(50, 550)
+            
+                if not self.available_powerups:
+                    self.available_powerups = ["spread", "laser", "homing", "multishot", "shield", "bomb", "piercing"]
+            
                 powerup_type = random.choice(self.available_powerups)
                 self.powerups.append(PowerUp(x, y, powerup_type))
                 self.available_powerups.remove(powerup_type)

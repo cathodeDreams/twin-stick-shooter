@@ -1,0 +1,29 @@
+PS C:\Users\cathode\Dreams> & c:/Users/cathode/Dreams/venv/Scripts/python.exe c:/Users/cathode/Dreams/Shooter/src/main.py
+pygame 2.6.0 (SDL 2.28.4, Python 3.12.4)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Traceback (most recent call last):
+  File "c:\Users\cathode\Dreams\Shooter\src\main.py", line 81, in <module>
+    main()
+  File "c:\Users\cathode\Dreams\Shooter\src\main.py", line 41, in main
+    game_result = game_loop(game)
+                  ^^^^^^^^^^^^^^^
+  File "c:\Users\cathode\Dreams\Shooter\src\main.py", line 65, in game_loop
+    game.update_game_state()
+  File "c:\Users\cathode\Dreams\Shooter\src\game.py", line 80, in update_game_state
+    self.update_powerups()
+  File "c:\Users\cathode\Dreams\Shooter\src\game.py", line 111, in update_powerups
+    self.powerup_system.update(self.player, self.graze_system.level, self.wave)
+  File "c:\Users\cathode\Dreams\Shooter\src\mechanics.py", line 94, in update
+    self.spawn_powerups()
+  File "c:\Users\cathode\Dreams\Shooter\src\mechanics.py", line 102, in spawn_powerups
+    powerup_type = random.choice(self.available_powerups)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cathode\AppData\Local\Programs\Python\Python312\Lib\random.py", line 347, in choice
+    raise IndexError('Cannot choose from an empty sequence')
+IndexError: Cannot choose from an empty sequence
+
+Many of the powerups do not seem to be implemented or are not functional. 
+
+The menu will not allow the controller to select "How To Play". I am unsure what causes this. I cannot acces the "How To Play" menu.
+
+I do not like the weapon name overlapping with the graze meter. I do not like the graze level being under the graze meter. Have the weapon name and remaining duration in the middle top. Have the Graze level to the left of the meter.

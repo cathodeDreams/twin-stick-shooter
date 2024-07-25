@@ -1,6 +1,6 @@
 # Twin Stick Shooter
 
-This is a 2D twin stick shooter game developed using Pygame.
+2D twin stick shooter game developed using Pygame.
 
 ## Setup
 
@@ -42,7 +42,9 @@ python src/main.py
 ## Controls
 
 - Left stick: Move
-- Right stick: Aim and shoot
+- Right stick: Aim
+- Right Trigger: Shoot
+- Left Trigger: ??
 - Right bumper: Sword attack
 - Left bumper: Activate shield
 - Start button: Pause game

@@ -3,6 +3,7 @@ import math
 import pygame
 from bullet import Bullet
 from powerup import PowerUp
+from colors import Colors
 
 class GrazingSystem:
     def __init__(self):
@@ -13,7 +14,7 @@ class GrazingSystem:
         self.inner_graze_distance = 30
         self.font = pygame.font.Font(None, 24)
         self.graze_rings = []
-        self.ring_fade_time = 30  # Frames for a ring to fade out
+        self.ring_fade_time = 30
 
     def update(self, player, enemy_bullets, enemies):
         self.update_graze_rings()
@@ -36,10 +37,13 @@ class GrazingSystem:
         self.meter += amount
         if self.meter >= self.max_meter:
             self.level_up()
+            return True
+        return False
 
     def level_up(self):
         self.level += 1
         self.meter = 0
+        return True
 
     def add_graze_ring(self, player, entity, zone):
         angle = math.atan2(entity.y - player.y, entity.x - player.x)
@@ -62,18 +66,18 @@ class GrazingSystem:
         meter_width = 200
         meter_height = 20
         x = screen_width - meter_width - 10
-        y = 50
-        pygame.draw.rect(screen, (100, 100, 100), (x, y, meter_width, meter_height))
+        y = 10
+        pygame.draw.rect(screen, Colors.COMMENT, (x, y, meter_width, meter_height))
         fill_width = int(self.meter / self.max_meter * meter_width)
-        pygame.draw.rect(screen, (0, 0, 255), (x, y, fill_width, meter_height))
+        pygame.draw.rect(screen, Colors.PURPLE, (x, y, fill_width, meter_height))
         
         # Draw graze level
-        level_text = self.font.render(f"Graze Level: {self.level}", True, (255, 255, 255))
-        screen.blit(level_text, (x, y + meter_height + 5))
+        level_text = self.font.render(f"Graze Level: {self.level}", True, Colors.FOREGROUND)
+        screen.blit(level_text, (x - level_text.get_width() - 10, y + 5))
 
     def draw_graze_zones(self, screen, player):
         for ring in self.graze_rings:
-            color = (255, 0, 0) if ring['zone'] == 'red' else (0, 0, 255)
+            color = Colors.GRAZE_INNER_COLOR if ring['zone'] == 'red' else Colors.GRAZE_OUTER_COLOR
             alpha = int(255 * (ring['time'] / self.ring_fade_time))
             surface = pygame.Surface((self.outer_graze_distance * 2, self.outer_graze_distance * 2), pygame.SRCALPHA)
             pygame.draw.arc(surface, (*color, alpha),
@@ -82,12 +86,17 @@ class GrazingSystem:
             screen.blit(surface, (ring['x'] - self.outer_graze_distance, ring['y'] - self.outer_graze_distance))
 
 class PowerUpSystem:
-    def __init__(self):
+    def __init__(self, game):
+        self.game = game
         self.powerups = []
-        self.available_powerups = ["spread", "laser", "homing", "multishot", "shield", "bomb", "piercing"]
+        self.available_powerups = ["spread", "laser", "homing", "multishot", "shield", "bomb"]
         self.powerup_duration = 600  # 10 seconds at 60 FPS
         self.wave_number = 1
         self.max_powerups = 3
+
+    def reset(self):
+        self.powerups = []
+        self.available_powerups = ["spread", "laser", "homing", "multishot", "shield", "bomb"]
 
     def update(self, player, graze_level, wave):
         self.wave_number = wave
@@ -97,11 +106,11 @@ class PowerUpSystem:
     def spawn_powerups(self):
         if self.wave_number >= 2 and self.wave_number % 2 == 0 and len(self.powerups) < self.max_powerups:
             if random.random() < 0.1:
-                x = random.randint(50, 750)
-                y = random.randint(50, 550)
+                x = random.randint(50, self.game.screen_width - 50)
+                y = random.randint(50, self.game.screen_height - 50)
             
                 if not self.available_powerups:
-                    self.available_powerups = ["spread", "laser", "homing", "multishot", "shield", "bomb", "piercing"]
+                    self.available_powerups = ["spread", "laser", "homing", "multishot", "shield", "bomb"]
             
                 powerup_type = random.choice(self.available_powerups)
                 self.powerups.append(PowerUp(x, y, powerup_type))
@@ -113,18 +122,14 @@ class PowerUpSystem:
         if powerup_type == "shield":
             player.activate_shield()
         elif powerup_type == "bomb":
-            # This should be handled in the Game class
-            pass
+            self.game.activate_bomb()
 
     def update_player_powerup(self, player):
         if player.powerup_timer > 0:
             player.powerup_timer -= 1
             if player.powerup_timer <= 0:
                 player.current_weapon = "default"
-                # Return the powerup type to available powerups
-                if player.current_weapon != "default":
-                    self.available_powerups.append(player.current_weapon)
-
+                
 class EnemyBehavior:
     def __init__(self):
         self.base_enemy_fire_rate = 60
@@ -145,8 +150,16 @@ class EnemyBehavior:
             self.fast_enemy_behavior(enemy, player, enemy_bullets)
         elif enemy.type == "tough":
             self.tough_enemy_behavior(enemy, player, enemy_bullets)
+        elif enemy.type == "flanker":
+            self.flanker_behavior(enemy, player, enemy_bullets)
+        elif enemy.type == "zigzag":
+            self.zigzag_behavior(enemy, player, enemy_bullets)
         elif enemy.type == "boss":
             self.boss_behavior(enemy, player, enemy_bullets)
+
+        # Keep enemies within screen bounds
+        enemy.x = max(enemy.size, min(player.screen_width - enemy.size, enemy.x))
+        enemy.y = max(enemy.size, min(player.screen_height - enemy.size, enemy.y))
 
     def normal_enemy_behavior(self, enemy, player, enemy_bullets):
         dx = player.x - enemy.x
@@ -187,6 +200,45 @@ class EnemyBehavior:
             for i in range(-spread // 2, spread // 2 + 1):
                 self.enemy_shoot(enemy, player, enemy_bullets, angle + i * 0.2)
 
+    def flanker_behavior(self, enemy, player, enemy_bullets):
+        dx = player.x - enemy.x
+        dy = player.y - enemy.y
+        dist = math.hypot(dx, dy)
+        
+        if dist > 200:
+            # Approach the player from the sides
+            speed = 2 * self.difficulty_multiplier
+            angle = math.atan2(dy, dx) + math.pi / 2  # Perpendicular to the player's direction
+            enemy.x += math.cos(angle) * speed
+            enemy.y += math.sin(angle) * speed
+        else:
+            # Circle around the player
+            speed = 2 * self.difficulty_multiplier
+            angle = math.atan2(dy, dx)
+            enemy.x += math.cos(angle + math.pi / 2) * speed
+            enemy.y += math.sin(angle + math.pi / 2) * speed
+
+        if random.randint(1, int(self.base_enemy_fire_rate / self.difficulty_multiplier)) == 1:
+            self.enemy_shoot(enemy, player, enemy_bullets)
+
+    def zigzag_behavior(self, enemy, player, enemy_bullets):
+        dx = player.x - enemy.x
+        dy = player.y - enemy.y
+        dist = math.hypot(dx, dy)
+
+        if dist != 0:
+            speed = 2 * self.difficulty_multiplier
+            angle = math.atan2(dy, dx)
+            enemy.x += math.cos(angle) * speed
+            enemy.y += math.sin(angle) * speed
+
+            # Zigzag movement
+            enemy.x += math.cos(enemy.y / 30) * speed
+            enemy.y += math.sin(enemy.x / 30) * speed
+
+        if random.randint(1, int(self.base_enemy_fire_rate / self.difficulty_multiplier)) == 1:
+            self.enemy_shoot(enemy, player, enemy_bullets)
+
     def boss_behavior(self, enemy, player, enemy_bullets):
         enemy.x = 400 + math.sin(pygame.time.get_ticks() * 0.001 * self.difficulty_multiplier) * 200
         enemy.y = min(enemy.y + 0.5 * self.difficulty_multiplier, 150)
@@ -221,10 +273,10 @@ class EnemyBehavior:
 
     def get_enemy_type(self, graze_level):
         if graze_level < 3:
-            return "normal"
+            return random.choice(["normal", "fast", "flanker", "zigzag"])
         elif graze_level < 6:
-            return random.choice(["normal", "fast"])
+            return random.choice(["normal", "fast", "tough", "flanker", "zigzag"])
         else:
-            choices = ["normal", "fast", "tough"]
-            weights = [1, 1 + self.difficulty_multiplier * 0.5, self.difficulty_multiplier - 1]
+            choices = ["normal", "fast", "tough", "flanker", "zigzag"]
+            weights = [1, 1 + self.difficulty_multiplier * 0.5, self.difficulty_multiplier - 1, 1, 1]
             return random.choices(choices, weights=weights)[0]

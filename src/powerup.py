@@ -1,5 +1,6 @@
 import pygame
 import math
+from colors import Colors
 
 class PowerUp:
     def __init__(self, x, y, powerup_type):
@@ -15,7 +16,7 @@ class PowerUp:
         
         # Draw an icon or letter to represent the powerup type
         font = pygame.font.Font(None, 20)
-        text = font.render(self.get_icon(), True, (0, 0, 0))
+        text = font.render(self.get_icon(), True, Colors.BACKGROUND)
         text_rect = text.get_rect(center=(self.x, self.y))
         screen.blit(text, text_rect)
 
@@ -25,16 +26,7 @@ class PowerUp:
         pygame.draw.circle(screen, color, (int(self.x), int(self.y)), self.size + pulse, 2)
 
     def get_color(self):
-        colors = {
-            "spread": (255, 165, 0),  # Orange
-            "laser": (0, 191, 255),   # Deep Sky Blue
-            "homing": (255, 105, 180),  # Hot Pink
-            "multishot": (255, 255, 0),  # Yellow
-            "shield": (0, 0, 255),    # Blue
-            "bomb": (255, 0, 0),      # Red
-            "piercing": (128, 0, 128)  # Purple
-        }
-        return colors.get(self.type, (255, 255, 255))  # Default to white if type not found
+        return Colors.POWERUP_COLORS.get(self.type, Colors.FOREGROUND)
 
     def get_icon(self):
         icons = {

@@ -49,9 +49,14 @@ def main():
 
 def game_loop(game):
     clock = pygame.time.Clock()
+    fixed_time_step = 1 / 60  # 60 FPS for game logic
+    accumulated_time = 0
     running = True
 
     while running:
+        frame_time = clock.tick() / 1000.0  # Time passed since last frame in seconds
+        accumulated_time += frame_time
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "exit"
@@ -61,8 +66,12 @@ def game_loop(game):
                     if pause_result == "main_menu" or pause_result == "exit":
                         return pause_result
 
-        game.handle_input()
-        game.update_game_state()
+        # Update game logic at fixed time steps
+        while accumulated_time >= fixed_time_step:
+            game.handle_input()
+            game.update_game_state()
+            accumulated_time -= fixed_time_step
+
         game.draw_game()
 
         if not game.player.alive:
@@ -75,7 +84,6 @@ def game_loop(game):
                 return game_over_result
 
         pygame.display.flip()
-        clock.tick(60)  # 60 FPS
 
 if __name__ == "__main__":
     main()

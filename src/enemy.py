@@ -24,8 +24,8 @@ class Enemy:
     def take_damage(self, amount):
         self.health -= amount
 
-    def draw(self, screen):
-        color = (255, 0, 0) if self.type == "boss" else (200, 0, 0)
+    def draw(self, screen, boss_color, enemy_color):
+        color = boss_color if self.type == "boss" else enemy_color
         pygame.draw.circle(screen, color, (int(self.x), int(self.y)), self.size)
 
     def collides_with(self, other):

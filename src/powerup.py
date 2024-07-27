@@ -1,6 +1,7 @@
 import pygame
 import math
 from colors import Colors
+from effects import apply_glow_and_shadow
 
 class PowerUp:
     def __init__(self, x, y, powerup_type):
@@ -12,6 +13,7 @@ class PowerUp:
 
     def draw(self, screen):
         color = self.get_color()
+        apply_glow_and_shadow(screen, color, (int(self.x), int(self.y)), self.size)
         pygame.draw.circle(screen, color, (int(self.x), int(self.y)), self.size)
         
         # Draw an icon or letter to represent the powerup type

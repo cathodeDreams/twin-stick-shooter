@@ -3,12 +3,16 @@ import math
 import random
 from bullet import Bullet
 from colors import Colors
+from effects import apply_glow_and_shadow
 
 class Player:
     def __init__(self, x, y, arena_rect):
+        self.arena_rect = arena_rect
+        self.reset(x, y)
+
+    def reset(self, x, y):
         self.x = x
         self.y = y
-        self.arena_rect = arena_rect
         self.size = 20
         self.hitbox_size = 5
         self.speed = 5
@@ -21,7 +25,10 @@ class Player:
         self.fire_cooldown = 0
         self.fire_rate = 15
         self.sword_cooldown = 0
-        self.sword_cooldown_max = 30
+        self.sword_cooldown_max = 30  # Half a second at 60 FPS
+        self.sword_active = False
+        self.sword_active_time = 0
+        self.sword_active_max = 10  # About 1/6 second at 60 FPS
         self.sword_range = 50
         self.sword_damage = 5
         self.powerup_timer = 0
@@ -37,8 +44,9 @@ class Player:
         new_y = max(self.arena_rect.top + self.size, min(self.arena_rect.bottom - self.size, self.y + dy * self.speed))
         self.x, self.y = new_x, new_y
 
-    def aim(self, angle):
-        self.angle = angle
+    def aim(self, aim_x, aim_y):
+        if abs(aim_x) > 0.1 or abs(aim_y) > 0.1:
+            self.angle = math.atan2(aim_y, aim_x)
 
     def shoot(self, bullets):
         if self.fire_cooldown == 0:
@@ -77,6 +85,7 @@ class Player:
 
     def sword_attack(self):
         if self.sword_cooldown == 0:
+            self.sword_active = True
             self.sword_cooldown = self.sword_cooldown_max
             return True
         return False
@@ -104,6 +113,11 @@ class Player:
         
         if self.sword_cooldown > 0:
             self.sword_cooldown -= 1
+        if self.sword_active:
+            self.sword_active_time += 1
+            if self.sword_active_time >= self.sword_active_max:
+                self.sword_active = False
+                self.sword_active_time = 0
 
         if self.powerup_timer > 0:
             self.powerup_timer -= 1
@@ -114,6 +128,8 @@ class Player:
             self.glow_timer -= 1
 
     def draw(self, screen):
+        apply_glow_and_shadow(screen, Colors.PLAYER_COLOR, (int(self.x), int(self.y)), self.size)
+        
         # Draw player triangle
         points = [
             (self.x + self.size * math.cos(self.angle), self.y + self.size * math.sin(self.angle)),
@@ -134,6 +150,12 @@ class Player:
             end_x = self.x + self.sword_range * math.cos(self.angle)
             end_y = self.y + self.sword_range * math.sin(self.angle)
             pygame.draw.line(screen, Colors.PLAYER_COLOR, (self.x, self.y), (end_x, end_y), 2)
+
+        if self.sword_active:
+            sword_length = self.size * 2
+            end_x = self.x + sword_length * math.cos(self.angle)
+            end_y = self.y + sword_length * math.sin(self.angle)
+            pygame.draw.line(screen, Colors.CYAN, (self.x, self.y), (end_x, end_y), 3)
 
         if self.glow_timer > 0:
             glow_color = Colors.PLAYER_COLOR

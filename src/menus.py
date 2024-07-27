@@ -23,7 +23,7 @@ def draw_menu(screen, menu_items, selected_index):
         screen.blit(text, (x, y))
 
 def main_menu(screen, joystick):
-    menu_items = ["Start Game", "How to Play", "Exit"]
+    menu_items = ["Start Game", "How to Play", "Settings", "Exit"]
     selected_index = 0
     clock = pygame.time.Clock()
     last_input_time = pygame.time.get_ticks()
@@ -41,6 +41,8 @@ def main_menu(screen, joystick):
                     elif selected_index == 1:
                         guide_menu(screen, joystick)
                     elif selected_index == 2:
+                        return "settings"
+                    elif selected_index == 3:
                         return "exit"
 
         if current_time - last_input_time > MENU_INPUT_DELAY:
@@ -100,7 +102,7 @@ def guide_menu(screen, joystick):
         clock.tick(MENU_FPS)
 
 def pause_menu(screen, joystick):
-    menu_items = ["Resume", "Exit to Main Menu"]
+    menu_items = ["Resume", "Settings", "Exit to Main Menu"]
     selected_index = 0
     clock = pygame.time.Clock()
     last_input_time = pygame.time.get_ticks()
@@ -132,6 +134,22 @@ def pause_menu(screen, joystick):
         draw_menu(screen, menu_items, selected_index)
         pygame.display.flip()
         clock.tick(MENU_FPS)
+
+def settings_loop(settings_menu):
+    clock = pygame.time.Clock()
+    while True:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return "exit"
+            result = settings_menu.handle_input(event)
+            if result == "main_menu":
+                return "main_menu"
+            elif result == "game":
+                return "game"
+
+        settings_menu.draw()
+        pygame.display.flip()
 
 def game_over_menu(screen, joystick, score):
     menu_font = pygame.font.Font(None, MENU_FONT_SIZE)

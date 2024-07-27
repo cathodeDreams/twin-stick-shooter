@@ -1,6 +1,7 @@
 import pygame
 import math
 from colors import Colors
+from effects import apply_glow_and_shadow
 
 class Bullet:
     def __init__(self, x, y, angle, friendly=False, speed=10, damage=1, bullet_type="default"):
@@ -42,21 +43,13 @@ class Bullet:
 
     def draw(self, screen):
         color = Colors.BULLET_COLOR if self.friendly else Colors.ENEMY_COLOR
+        apply_glow_and_shadow(screen, color, (int(self.x), int(self.y)), self.size)
         if self.bullet_type == "laser":
             pygame.draw.line(screen, color, (int(self.x), int(self.y)), 
                              (int(self.x + self.speed * 2 * math.cos(self.angle)), 
                               int(self.y + self.speed * 2 * math.sin(self.angle))), 2)
         else:
             pygame.draw.circle(screen, color, (int(self.x), int(self.y)), self.size)
-
-        # Draw glowing effect
-        if self.glow_timer > 0:
-            glow_color = Colors.BULLET_COLOR if self.friendly else Colors.ENEMY_COLOR
-            glow_size = self.size + self.glow_timer // 5
-            glow_alpha = 128 * (self.glow_timer / 30)
-            glow_surface = pygame.Surface((glow_size * 2, glow_size * 2), pygame.SRCALPHA)
-            pygame.draw.circle(glow_surface, (*glow_color, int(glow_alpha)), (glow_size, glow_size), glow_size)
-            screen.blit(glow_surface, (int(self.x - glow_size), int(self.y - glow_size)))
 
     def collides_with(self, other):
         return math.hypot(self.x - other.x, self.y - other.y) < self.size + other.size

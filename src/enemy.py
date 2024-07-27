@@ -1,6 +1,7 @@
 import pygame
 import math
 import random
+from effects import apply_glow_and_shadow
 
 class Enemy:
     def __init__(self, enemy_type, arena_rect):
@@ -27,6 +28,7 @@ class Enemy:
 
     def draw(self, screen, boss_color, enemy_color):
         color = boss_color if self.type == "boss" else enemy_color
+        apply_glow_and_shadow(screen, color, (int(self.x), int(self.y)), self.size)
         pygame.draw.circle(screen, color, (int(self.x), int(self.y)), self.size)
 
     def collides_with(self, other):

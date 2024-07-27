@@ -1,54 +1,62 @@
-# Twin Stick Shooter
+# Twin Stick Shooter Game
 
-2D twin stick shooter game developed using Pygame.
+## Description
 
-## Setup
+2D, Wave-based, arena-bound, twin-stick shooter. Increazing graze level increases health by one point.
 
-1. Ensure you have Python 3.x installed on your system.
+## Requirements
+
+- Python 3.x
+- Pygame library
+
+## Installation
+
+1. Ensure you have Python installed.
+   ```
+   python --version
+   ```
 2. Clone this repository:
    ```
-   git clone <repository-url>
+   git clone https://github.com/your-username/twin-stick-shooter.git
    ```
-3. Navigate to the project directory:
+4. Install the required dependencies:
    ```
-   cd twin-stick-shooter
-   ```
-4. Create a virtual environment:
-   ```
-   python -m venv venv
-   ```
-5. Activate the virtual environment:
-   - On Windows:
-     ```
-     venv\Scripts\activate
-     ```
-   - On macOS and Linux:
-     ```
-     source venv/bin/activate
-     ```
-6. Install the required packages:
-   ```
-   pip install -r requirements.txt
+   pip install requirements.txt
    ```
 
-## Running the Game
+## How to Play
 
-To run the game, execute the following command from the project root:
+1. Run the game:
+   ```
+   python src/main.py
+   ```
+2. Game was designed with Xbox controller:
+   - Left stick to move
+   - Right stick to aim
+   - Right trigger to shoot
+   - Right bumper for sword attack
+   - Left bumper to activate shield
+   - Start button to pause the game
 
-```
-python src/main.py
-```
+## Power-ups
 
-## Controls
+- S: Spread shot
+- L: Laser
+- H: Homing missiles
+- M: Multi-shot
+- D: Shield
+- B: Bomb
 
-- Left stick: Move
-- Right stick: Aim
-- Right Trigger: Shoot
-- Left Trigger: ??
-- Right bumper: Sword attack
-- Left bumper: Activate shield
-- Start button: Pause game
+## Contributing
+
+I welcome feedback and contribution of any kind. I have not much clue what I'm doing so patience should probably be a virtue of yours.
 
 ## License
 
-## Contributing
+This project is licensed under the GNU General Public License (GPL). 
+
+## Acknowledgments
+
+The open source community
+Claude.ai - Anthropic
+Dracula Color scheme

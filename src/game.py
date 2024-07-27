@@ -14,7 +14,15 @@ class Game:
         self.screen = screen
         self.joystick = joystick
         self.screen_width, self.screen_height = screen.get_size()
-        self.player = Player(self.screen_width // 2, self.screen_height // 2, self.screen_width, self.screen_height)
+        self.border_width = 2
+        self.border_padding = 50  # Padding from screen edges
+        self.arena_rect = pygame.Rect(
+            self.border_padding,
+            self.border_padding,
+            self.screen_width - 2 * self.border_padding,
+            self.screen_height - 2 * self.border_padding
+        )
+        self.player = Player(self.screen_width // 2, self.screen_height // 2, self.arena_rect)
         self.bullets = []
         self.enemy_bullets = []
         self.enemies = []
@@ -30,10 +38,9 @@ class Game:
         # Create a slightly lighter background for the play area
         self.play_area_color = tuple(min(c + 10, 255) for c in Colors.BACKGROUND_COLOR)
         self.border_color = Colors.FOREGROUND
-        self.border_width = 2
 
     def reset(self):
-        self.player = Player(self.screen_width // 2, self.screen_height // 2, self.screen_width, self.screen_height)
+        self.player = Player(self.screen_width // 2, self.screen_height // 2, self.arena_rect)
         self.bullets = []
         self.enemy_bullets = []
         self.enemies = []
@@ -78,9 +85,9 @@ class Game:
         self.update_powerups()
         self.update_particles()
         self.check_collisions()
-        self.graze_system.update(self.player, self.enemy_bullets, self.enemies)
+        graze_level_up = self.graze_system.update(self.player, self.enemy_bullets, self.enemies)
 
-        if self.graze_system.add_meter(0):  # Only level up if meter is full
+        if graze_level_up:
             self.player.hits_remaining += 1
 
         if len(self.enemies) == 0:
@@ -91,15 +98,15 @@ class Game:
         for bullet in self.bullets[:]:
             if bullet.bullet_type == "homing":
                 closest_enemy = min(self.enemies, key=lambda e: math.hypot(e.x - bullet.x, e.y - bullet.y), default=None)
-                bullet.update(closest_enemy)
+                bullet.update(self.arena_rect, closest_enemy)
             else:
-                bullet.update()
-            if not bullet.is_on_screen(self.screen_width, self.screen_height) or bullet.lifetime <= 0:
+                bullet.update(self.arena_rect)
+            if not bullet.is_on_screen(self.arena_rect) or bullet.lifetime <= 0:
                 self.bullets.remove(bullet)
 
         for bullet in self.enemy_bullets[:]:
-            bullet.update()
-            if not bullet.is_on_screen(self.screen_width, self.screen_height) or bullet.lifetime <= 0:
+            bullet.update(self.arena_rect)
+            if not bullet.is_on_screen(self.arena_rect) or bullet.lifetime <= 0:
                 self.enemy_bullets.remove(bullet)
                 
     def update_enemies(self):
@@ -166,21 +173,19 @@ class Game:
         num_enemies = self.wave * 2
         for _ in range(num_enemies):
             enemy_type = self.enemy_behavior.get_enemy_type(self.graze_system.level)
-            self.enemies.append(Enemy(enemy_type, self.screen_width, self.screen_height))
+            self.enemies.append(Enemy(enemy_type, self.arena_rect))
 
     def draw_game(self):
         self.screen.fill(Colors.BACKGROUND_COLOR)
         
         # Draw the play area with a slightly lighter background
-        pygame.draw.rect(self.screen, self.play_area_color, (0, 0, self.screen_width, self.screen_height))
+        pygame.draw.rect(self.screen, self.play_area_color, self.arena_rect)
         
         # Draw the border
-        pygame.draw.rect(self.screen, self.border_color, (0, 0, self.screen_width, self.screen_height), self.border_width)
+        pygame.draw.rect(self.screen, self.border_color, self.arena_rect, self.border_width)
         
         self.graze_system.draw_graze_zones(self.screen, self.player)
         
-        self.player.draw(self.screen)
-
         for bullet in self.bullets:
             bullet.draw(self.screen)
 
@@ -196,28 +201,11 @@ class Game:
         for particle in self.particles:
             particle.draw(self.screen)
 
+        self.player.draw(self.screen)
+
         self.draw_ui()
 
         pygame.display.flip()
-
-    def update_game_state(self):
-        if not self.player.alive:
-            return
-
-        self.player.update()
-        self.update_bullets()
-        self.update_enemies()
-        self.update_powerups()
-        self.update_particles()
-        self.check_collisions()
-        graze_level_up = self.graze_system.update(self.player, self.enemy_bullets, self.enemies)
-
-        if graze_level_up:
-            self.player.hits_remaining += 1
-
-        if len(self.enemies) == 0:
-            self.wave += 1
-            self.spawn_enemies()
 
     def draw_ui(self):
         score_text = self.font.render(f"Score: {self.score}", True, Colors.FOREGROUND)

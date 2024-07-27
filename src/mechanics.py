@@ -157,9 +157,9 @@ class EnemyBehavior:
         elif enemy.type == "boss":
             self.boss_behavior(enemy, player, enemy_bullets)
 
-        # Keep enemies within screen bounds
-        enemy.x = max(enemy.size, min(player.screen_width - enemy.size, enemy.x))
-        enemy.y = max(enemy.size, min(player.screen_height - enemy.size, enemy.y))
+        # Keep enemies within arena bounds
+        enemy.x = max(enemy.arena_rect.left + enemy.size, min(enemy.arena_rect.right - enemy.size, enemy.x))
+        enemy.y = max(enemy.arena_rect.top + enemy.size, min(enemy.arena_rect.bottom - enemy.size, enemy.y))
 
     def normal_enemy_behavior(self, enemy, player, enemy_bullets):
         dx = player.x - enemy.x
@@ -240,8 +240,8 @@ class EnemyBehavior:
             self.enemy_shoot(enemy, player, enemy_bullets)
 
     def boss_behavior(self, enemy, player, enemy_bullets):
-        enemy.x = 400 + math.sin(pygame.time.get_ticks() * 0.001 * self.difficulty_multiplier) * 200
-        enemy.y = min(enemy.y + 0.5 * self.difficulty_multiplier, 150)
+        enemy.x = enemy.arena_rect.left + enemy.arena_rect.width // 2 + math.sin(pygame.time.get_ticks() * 0.001 * self.difficulty_multiplier) * (enemy.arena_rect.width // 4)
+        enemy.y = min(enemy.y + 0.5 * self.difficulty_multiplier, enemy.arena_rect.top + 150)
 
         time = pygame.time.get_ticks() * 0.001
         if int(time * 2 * self.difficulty_multiplier) % 2 == 0:

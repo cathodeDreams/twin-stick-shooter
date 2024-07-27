@@ -5,11 +5,10 @@ from bullet import Bullet
 from colors import Colors
 
 class Player:
-    def __init__(self, x, y, screen_width, screen_height):
+    def __init__(self, x, y, arena_rect):
         self.x = x
         self.y = y
-        self.screen_width = screen_width
-        self.screen_height = screen_height
+        self.arena_rect = arena_rect
         self.size = 20
         self.hitbox_size = 5
         self.speed = 5
@@ -34,8 +33,9 @@ class Player:
             self.x -= dx * self.speed * 0.5
             self.y -= dy * self.speed * 0.5
             self.kickback_timer -= 1
-        self.x = max(self.size, min(self.screen_width - self.size, self.x + dx * self.speed))
-        self.y = max(self.size, min(self.screen_height - self.size, self.y + dy * self.speed))
+        new_x = max(self.arena_rect.left + self.size, min(self.arena_rect.right - self.size, self.x + dx * self.speed))
+        new_y = max(self.arena_rect.top + self.size, min(self.arena_rect.bottom - self.size, self.y + dy * self.speed))
+        self.x, self.y = new_x, new_y
 
     def aim(self, angle):
         self.angle = angle

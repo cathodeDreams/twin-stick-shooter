@@ -17,11 +17,11 @@
    ```
 2. Clone this repository:
    ```
-   git clone https://github.com/your-username/twin-stick-shooter.git
+   git clone https://github.com/cathodeDreams/twin-stick-shooter.git
    ```
 4. Install the required dependencies:
    ```
-   pip install requirements.txt
+   pip install -r requirements.txt
    ```
 
 ## How to Play

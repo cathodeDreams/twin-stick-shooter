@@ -58,5 +58,7 @@ This project is licensed under the GNU General Public License (GPL).
 ## Acknowledgments
 
 The open source community
+
 Claude.ai - Anthropic
+
 Dracula Color scheme

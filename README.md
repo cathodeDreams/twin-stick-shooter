@@ -2,7 +2,7 @@
 
 ## Description
 
-2D, Wave-based, arena-bound, twin-stick shooter. Increazing graze level increases health by one point.
+2D, Wave-based, arena-bound, twin-stick shooter. Increasing graze level increases health by one point.
 
 ## Requirements
 
